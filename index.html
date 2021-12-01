@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        background-color: #4cc9f0;
+        height: 100%;
+        max-width: 100%;
+        overflow: hidden;
+      }
+      #ball {
+        width: 30px;
+        height: 30px;
+        background-color: #b5179e;
+        border-radius: 50%;
+        position: absolute;
+        bottom: 500px;
+        left: 10px;
+        z-index: 1;
+      }
+      #ground {
+        width: 100%;
+        height: 80px;
+        background-color: #3a0ca3;
+        position: absolute;
+        bottom: 0px;
+      }
+      .shadow {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: blanchedalmond;
+        position: absolute;
+        z-index: 4;
+      }
+      #ballstand {
+        width: 30px;
+        height: 20px;
+        background-color: #3a0ca3;
+        position: absolute;
+        bottom: 480px;
+        left: 10px;
+      }
+
+      #basket {
+        width: 40px;
+        height: 40px;
+        background-color: #0ca350;
+        position: absolute;
+        left: 270px;
+        bottom: 80px;
+        z-index: 2;
+      }
+
+      .StartingAngiel {
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        background-color: blanchedalmond;
+        position: absolute;
+        z-index: 4;
+      }
+
+      #gool-text {
+        display: none;
+        text-align: center;
+        font-size: 5rem;
+        color: #0ca350;
+        font-family: arial, Helvetica, sans-serif;
+      }
+
+      #info {
+        width: 200px;
+        height: 200px;
+        background-color: black;
+        color: wheat;
+        position: absolute;
+        right: 10px;
+        top: 10px;
+      }
+
+      .line-drow {
+        height: 5px;
+        width: 20px;
+        bottom: 520px;
+        left: 30px;
+        position: absolute;
+        background-color: white;
+        transform: rotate(-60deg);
+      }
+      .headline{
+        text-align: center;
+        font-size: 2rem;
+        color: #0ca350;
+        font-family: arial, Helvetica, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="ball"></div>
+    <div id="ground"></div>
+    <div id="ballpath"></div>
+    <div id="ballstand"></div>
+    <div id="basket"></div>
+    <div class="line-drow" id="initial-path"></div>
+
+    <h1 id="gool-text">Gooooooal</h1>
+    <h1 class="headline" >Score a Goal</h1>
+    <div id="info">
+      <div>
+        <div>Inter initial Velocity</div>
+        <input value="40" id="setVelocity" type="text" />
+      </div>
+      <div>
+        <div>Inter projection angle</div>
+        <input
+          onchange="dorwInitialPath()"
+          min="0"
+          max="90"
+          value="60"
+          id="setAngle"
+          type="number"
+        />
+      </div>
+
+      <button onclick="start()">Start</button>
+      <button onclick="reset()">Reset</button>
+      <div class="data">
+        <h4 id="x-number">X :0</h4>
+        <h4 id="y-number">Y :500</h4>
+      </div>
+    </div>
+
+    <script>
+      let ball = document.getElementById("ball");
+      let path = document.getElementById("ballpath");
+      let gooltext = document.getElementById("gool-text");
+      let x_number = document.getElementById("x-number");
+      let y_number = document.getElementById("y-number");
+      let getVelocity = document.getElementById("setVelocity");
+      let getAngle = document.getElementById("setAngle");
+      let basket = document.getElementById("basket");
+      let initialPath = document.getElementById("initial-path");
+
+      let time = 0,
+        initialY = 500,
+        initialX = 10,
+        positionX,
+        positionY,
+        volocty = 40,
+        angel,
+        pi = 3.14,
+        radius,
+        gravity = 9.8,
+        intervel,
+        isInRange = false,
+        randomNumber = 270,
+        isHitGround = false,
+        isStrting = false;
+
+      let movingOperation = (movingX = 0, movingY = 100) => {
+        ball.style.left = movingX + "px";
+        ball.style.bottom = movingY + "px";
+        isGoalScored(positionX, positionY);
+      };
+      let getValues = () => {
+        volocty = getVelocity.value;
+        angel = getAngle.value;
+        radius = (angel * pi) / 180;
+      };
+
+      let drowShadowPath = (shadowX, shadowY) => {
+        path.innerHTML += `<span class="shadow" style="left:${shadowX}px ; bottom:${shadowY}px" > </span>`;
+        HitGround(positionY < 95 ? (positionY = 80) : positionY);
+      };
+
+      let logicMove = () => {
+        positionX = initialX + volocty * Math.cos(radius) * time;
+        positionY =
+          initialY +
+          volocty * Math.sin(radius) * time -
+          0.5 * gravity * (time * time);
+        time += 0.2;
+
+        showInfoScreen(positionX, positionY);
+        drowShadowPath(positionX, positionY);
+        movingOperation(positionX, positionY);
+      };
+
+      let isGoalScored = (scordX, scordY) => {
+        if (
+          inRange(scordX, randomNumber - 20, randomNumber + 20) &&
+          inRange(scordY, 70, 100)
+        ) {
+          gooltext.style.display = "block";
+          clearInterval(intervel);
+        } else console.log(randomNumber);
+      };
+
+      let HitGround = (hitGroundY) => {
+        if (hitGroundY == 80) {
+          clearInterval(intervel);
+          isHitGround = true;
+        }
+      };
+
+      let showInfoScreen = (infoX, infoY) => {
+        x_number.innerHTML = `X: ${Math.floor(infoX)}`;
+        y_number.innerHTML = `Y: ${Math.floor(infoY)}`;
+      };
+
+      start = () => {
+        getValues();
+        initialPath.style.display = "none";
+        !isHitGround && !isStrting && mainFunction();
+      };
+
+      let mainFunction = () => {
+        isStrting = true;
+        intervel = setInterval(logicMove, 80);
+      };
+
+      let reset = () => {
+        generateBasket();
+        clearInterval(intervel);
+        isHitGround = false;
+        isStrting = false;
+        ball.style.left = "10px";
+        ball.style.bottom = initialY + "px";
+        time = 0;
+        path.innerHTML = "";
+        x_number.innerHTML = `X: 10`;
+        y_number.innerHTML = `Y: 500`;
+        gooltext.style.display = "none";
+        initialPath.style.display = "block";
+      };
+
+      let generateBasket = () => {
+        generateRandomNumber();
+        basket.style.left = `${randomNumber}px`;
+      };
+
+      let generateRandomNumber = () => {
+        randomNumber = Math.floor(Math.random() * 900);
+      };
+
+      let inRange = (ComprsonNumber, min, max) => {
+        return (ComprsonNumber - min) * (ComprsonNumber - max) <= 0;
+      };
+
+      let dorwInitialPath = () => {
+        getValues();
+        console.log(angel);
+        initialPath.style.transform = `rotate(-${angel}deg)`;
+      };
+    </script>
+  </body>
+</html>
